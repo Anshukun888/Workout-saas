@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="220" height="44" viewBox="0 0 220 44" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="MuscleMap">
+  <!-- Dumbbell mark -->
+  <g transform="translate(6,8)">
+    <rect x="0" y="4" width="6" height="20" rx="2" fill="#ffffff" opacity="0.8"/>
+    <rect x="8" y="0" width="6" height="28" rx="2" fill="#ffffff"/>
+    <rect x="16" y="10" width="28" height="8" rx="4" fill="#00B894"/>
+    <rect x="46" y="0" width="6" height="28" rx="2" fill="#ffffff"/>
+    <rect x="54" y="4" width="6" height="20" rx="2" fill="#ffffff" opacity="0.8"/>
+  </g>
+  <!-- Brand text: strong, modern -->
+  <g fill="#ffffff" font-family="Segoe UI, Roboto, Helvetica, Arial, sans-serif" font-weight="800">
+    <text x="78" y="28" font-size="20">Muscle</text>
+    <text x="155" y="28" font-size="20" fill="#00E0A1">Map</text>
+  </g>
+  <!-- Background mask to look good on dark navbar -->
+  <rect x="0.5" y="0.5" width="219" height="43" rx="10" stroke="rgba(255,255,255,0.06)" fill="none"/>
+</svg>
+

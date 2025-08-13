@@ -1,0 +1,4 @@
+1. Run 'sql/schema_and_seed.sql' in your MySQL client or phpMyAdmin.
+2. Edit src/db.php and set DB credentials.
+3. Serve the 'public' folder as the web root (or point your server to public/index.php).
+4. Visit public/signup.php to create an account (or login if you created one).
