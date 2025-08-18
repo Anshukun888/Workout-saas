@@ -482,6 +482,7 @@ $historyCount = (int)$historyCountStmt->fetchColumn();
   "Chest Dips",
   "Standing Cable Chest Press",
   "Resistance Band Chest Fly",
+  "Incline Dumbbell Press",
 
   // Back (Upper & Mid)
   "Pull-ups",

@@ -415,16 +415,21 @@ function renderRoutine(routine){
     const dr = col.querySelector('.day-results');
     if (ds && dr) attachDaySearch(ds, dr, i, grid);
   }
-  // apply initial selection highlight based on dropdown value or routine.today_index
-  const initialIdx = todaySel ? parseInt(todaySel.value||'0',10) : (routine.today_index||0);
-  if (initialIdx) {
-    const cards = grid.querySelectorAll('.routine-day');
+  // apply initial selection highlight based on dropdown value, routine.today_index, or default to first day
+  let initialIdx = todaySel ? parseInt(todaySel.value||'0',10) : (routine.today_index||1);
+  if (!initialIdx || initialIdx < 1) initialIdx = 1; // ensure we have a valid index
+  
+  const cards = grid.querySelectorAll('.routine-day');
+  if (cards.length > 0) {
     const card = cards[initialIdx-1];
     if (card){
       cards.forEach(x=> x.classList.remove('selected'));
       document.querySelectorAll('.routine-day .selected-flag').forEach(b=> b.style.display='none');
       card.classList.add('selected');
       const flag = card.querySelector('.selected-flag'); if (flag) flag.style.display='inline-block';
+      
+      // also update the dropdown to match the selected day
+      if (todaySel) todaySel.value = String(initialIdx);
     }
   }
   // add handlers
@@ -662,74 +667,178 @@ function attachDaySearch(input, resultsBox, dayIndex, grid){
 
 function inferType(name) {
   const n = name.toLowerCase();
+  const escapeRegExp = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
-  // Neck & Upper Traps — put first so shrugs/upright row don't get misclassified
-  if (/(neck|shrug|neck curl|neck extension|neck flexion|neck lateral|neck rotation|neck harness|upright row|farmer.*shrug)/.test(n))
-    return 'Neck/Traps';
+  const map = {
+    Neck: [
+      "Neck Curl","Neck Flexion","Neck Extension","Neck Lateral Flexion",
+      "Neck Rotation","Isometric Neck Hold","Neck Harness Extension",
+      "Neck Harness Flexion","Shrugs with Dumbbells","Barbell Shrugs",
+      "Cable Shrugs","Upright Row","Farmer’s Walk with Shrugs","Kettlebell Shrugs"
+    ],
+    Shoulders: [
+      "Overhead Press","Dumbbell Shoulder Press","Barbell Shoulder Press",
+      "Arnold Press","Lateral Raise","Front Raise","Rear Delt Fly",
+      "Cable Face Pull","Cuban Press","Snatch Grip High Pull",
+      "Handstand Push-ups","Pike Push-ups","Z-Press","Dumbbell Reverse Fly",
+      "Plate Raises","Kettlebell Overhead Press","Landmine Press",
+      "Single-arm Dumbbell Press","Cable Lateral Raise","Incline Lateral Raise",
+      "Reverse Pec Deck Fly","Dumbbell Cuban Rotation","Landmine 180 Press",
+      "Dumbbell Y-Press","Kettlebell Bottoms-Up Press","Shoulder Tap Push-ups",
+      "Wall Slides"
+    ],
+      Chest: [
+      "bench press","incline bench press","decline bench press","dumbbell press",
+      "incline dumbbell press","decline dumbbell press","chest press","pec deck",
+      "chest fly","cable crossover","cable fly","push-up","incline push-up",
+      "decline push-up","diamond push-up","floor press","medicine ball push-up",
+      "dumbbell fly","incline fly","floor dumbbell fly","single-arm dumbbell press"
+    ],
+    Back: [
+      "Pull-ups","Chin-ups","Inverted Row","Bent Over Row (Barbell)",
+      "Dumbbell Row","T-Bar Row","Cable Row","Lat Pulldown","Face Pulls",
+      "Straight Arm Pulldown","Renegade Row","Meadows Row","Seal Row",
+      "Kettlebell Row","Back Extension","Scapular Pull-ups",
+      "Single-arm Cable Row","Resistance Band Pull-apart",
+      "Lat Pullover with Dumbbell","Kettlebell Renegade Row","Cable High Row",
+      "Standing T-Bar Row","Meadows Row (Barbell)","Chest Supported Row",
+      "Wide-grip Pull-up","Close-grip Pulldown","Deadlift to Shrug",
+      "Reverse Grip Bent Over Row","Single-arm Inverted Row","TRX Row",
+      "Scapular Retraction Holds","Deadlift with Dumbbells",
+      "Deadlift (Conventional)","Romanian Deadlift","Sumo Deadlift",
+      "Good Mornings","Hyperextensions","Kettlebell Swings","Rack Pulls",
+      "Single-Leg Deadlift","Back Extensions on Stability Ball",
+      "Suitcase Deadlift","Kettlebell Deadlift","Single-leg Back Extension",
+      "Stability Ball Back Extension","Glute Ham Raises","Bird Dog",
+      "Supermans","Floor Bridges"
+    ],
+    Biceps: [
+      "Barbell Curl","Dumbbell Curl","Hammer Curl","Concentration Curl",
+      "Preacher Curl","Zottman Curl","Cable Curl","Incline Dumbbell Curl",
+      "Spider Curl","Chin-up Hold","Resistance Band Curl",
+      "Cross-body Hammer Curl","21s (Curl variations)",
+      "Cross-body Dumbbell Curl","Cable Rope Hammer Curl",
+      "Dumbbell Drag Curl","Barbell Reverse Curl",
+      "Zottman Curl with Dumbbells","Resistance Band Curl with Hold",
+      "Incline Inner-biceps Curl","Spider Curl on Incline Bench",
+      "Concentration Curl with Pause","Preacher Curl with EZ Bar"
+    ],
+    Triceps: [
+      "Tricep Dips","Tricep Pushdown","Overhead Tricep Extension",
+      "Skull Crushers","Close-Grip Bench Press","Kickbacks",
+      "Cable Tricep Extension","One-Arm Overhead Extension","Bench Dips",
+      "Diamond Push-ups","Dumbbell Floor Press","Rope Pushdown",
+      "Dumbbell Tate Press","One-arm Cable Overhead Extension",
+      "Close-Grip Push-ups","Dumbbell Kickbacks with Twist",
+      "EZ Bar Skull Crushers","Overhead Rope Extension",
+      "Dumbbell Overhead Extension",
+      "Bodyweight Tricep Extension (inverted push-up)"
+    ],
+    Forearms: [
+      "Wrist Curls","Reverse Wrist Curls","Farmer’s Walk","Plate Pinch",
+      "Towel Pull-ups","Dead Hangs","Rice Bucket Training",
+      "Fingertip Push-ups","Wrist Roller Exercise","Hammer Curls",
+      "Kettlebell Holds","Plate Wrist Rotations","Reverse Dumbbell Curl",
+      "Fingertip Dead Hang","Towel Grip Rows","Rice Finger Pinches",
+      "Fat Grip Farmer’s Carry","Wrist Roller with Weight",
+      "Plate Pinch Walk","Kettlebell Finger Holds","Wrist Flexion Stretch"
+    ],
+    Abs: [
+      "Crunches","Sit-ups","Plank","Side Plank","Russian Twist",
+      "Leg Raises","Hanging Leg Raises","Bicycle Crunches","Toe Touches",
+      "Flutter Kicks","V-Ups","Ab Wheel Rollout","Mountain Climbers",
+      "Cable Woodchopper","Medicine Ball Slams","Side Bends","Dead Bug",
+      "Windshield Wipers","L-Sit Hold","Hanging Knee Tucks","Dragon Flag",
+      "Hanging Windshield Wipers","Cable Russian Twist","Weighted Plank",
+      "Medicine Ball Russian Twist","Stability Ball Pike",
+      "TRX Mountain Climbers","Side Plank with Leg Raise",
+      "Lying Leg Circles","Hollow Body Hold",
+      "Hanging Oblique Knee Raises","V-Sit Hold",
+      "Cable Anti-Rotation Press","Plank to Push-up","Spiderman Plank",
+      "Plank Jacks"
+    ],
+    Quads: [
+      "Squats (Back)","Front Squat","Bulgarian Split Squat",
+      "Lunges (Forward)","Walking Lunges","Reverse Lunges","Step-ups",
+      "Leg Press","Leg Extension","Wall Sit","Jump Squats","Box Jumps",
+      "Pistol Squat","Sled Push","Hack Squat Machine","Goblet Squat",
+      "Step-back Lunges","Jumping Lunges","Curtsy Lunges",
+      "Kettlebell Goblet Squat","Sled Drag","Barbell Walking Lunges",
+      "Box Step-down","Reverse Nordic Curl","Wall Ball Squats",
+      "Dumbbell Split Squat","Front Rack Squat","Step-up to Reverse Lunge",
+      "Jumping Step-ups","Sled Sprints","Band Resisted Squats"
+    ],
+    Hamstrings: [
+      "Romanian Deadlift","Good Mornings","Leg Curl Machine (Seated)",
+      "Leg Curl Machine (Lying)","Glute-Ham Raises","Single-Leg Deadlift",
+      "Kettlebell Swings","Nordic Hamstring Curl","Elevated Glute Bridge",
+      "Cable Pull-Through","Dumbbell Glute Kickback",
+      "Frog Pumps with Resistance Band","Glute Bridge March",
+      "Side-lying Hip Abduction","Banded Clamshell","Cable Glute Kickback",
+      "Barbell Hip Thrust","Sled Backward Drag"
+    ],
+    Glutes: [
+      "Hip Thrust","Glute Bridge","Cable Kickbacks","Step-ups",
+      "Bulgarian Split Squat","Sumo Deadlift","Kettlebell Swing",
+      "Frog Pumps","Clamshells","Fire Hydrants","Donkey Kicks",
+      "Lateral Band Walks"
+    ],
+    Calves: [
+      "Standing Calf Raises","Seated Calf Raises","Donkey Calf Raises",
+      "Jump Rope","Box Jumps","Sprinting","Farmer’s Walk on Toes",
+      "Single-leg Calf Raise","Jump Rope Double Unders",
+      "Box Jump Calf Focus","Seated Dumbbell Calf Raise",
+      "Explosive Calf Jumps","Jump Squat Calf Raise",
+      "Weighted Standing Calf Raise","Donkey Calf Raise on Machine"
+    ],
+    Cardio: [
+      "Running (Steady State)","Sprinting","Jogging","Jump Rope",
+      "Stair Climber","Rowing Machine","Battle Ropes",
+      "Medicine Ball Slams","Agility Ladder Drills","Cone Drills",
+      "Sandbag Carry","Tire Flip","Bear Hug Carry","Shadowboxing",
+      "Swimming","Cycling","Elliptical Machine","Burpees","Mountain Climbers",
+      "Box Jumps","Hill Sprints","Shuttle Runs","Sled Push Sprint",
+      "Jump Rope Intervals","Tabata Burpees","Battle Rope Waves",
+      "Medicine Ball Chest Pass","Agility Ladder Quick Feet",
+      "Box Drill Sprints","Rowing Intervals","Swimming Sprints",
+      "Kettlebell Complex","Shadowboxing with Weights",
+      "Jump Rope Criss-Cross","Sprint Intervals on Treadmill"
+    ],
+    Gymnastics: [
+      "Muscle-ups","Front Lever","Back Lever","Planche","Human Flag",
+      "Wall Walk","Handstand Push-ups","L-Sit","Wall Sit","Jump Tuck",
+      "Skin the Cat","Ring Rows","Ring Dips","Rope Climbing",
+      "Ring Muscle-ups","Assisted Front Lever",
+      "Advanced Planche Progressions","Wall Handstand Hold",
+      "Skin the Cat on Rings","One-arm Push-up","L-Sit to Handstand",
+      "Back Lever Progression","Human Flag Holds","Handstand Walk",
+      "Ring Support Hold","Planche Lean"
+    ],
+    Mobility: [
+      "Yoga Sun Salutation","Downward Dog","Cat-Cow Stretch","Cobra Stretch",
+      "Pigeon Pose","Child’s Pose","Hip Flexor Stretch","Hamstring Stretch",
+      "Quad Stretch","Shoulder Dislocates","Thoracic Spine Rotations",
+      "Wrist Mobility Drills","Standing Forward Fold","Half Pigeon Pose",
+      "Downward Dog to Cobra Flow","Seated Spinal Twist",
+      "Shoulder Opener with Strap","Hip Circles",
+      "Cat-Cow with Breath","Dynamic Hamstring Stretch",
+      "Ankle Mobility Drills","Thoracic Bridge","Foam Rolling Quads",
+      "Foam Rolling IT Band","Foam Rolling Calves","Foam Rolling Glutes",
+      "Wrist Extension Stretch","Prone Thoracic Rotation"
+    ]
+  };
 
-  // Shoulders
-  if (/(shoulder|overhead press|lateral raise|front raise|rear delt|reverse fly|reverse pec deck|delt|arnold|cuban press|face pull|plate raise|y-press|wall slide|upright row shoulder)/.test(n))
-    return 'Shoulders';
-
-  // Back (upper & mid) — put before lower back to avoid conflicts
-  if (/(pull-up|chin-up|row(?!er)|t-bar|pulldown|pull-down|lat pulldown|latissimus|renegade row|seal row|meadows row|face pull|scapular|high row|chest supported row|close-grip pulldown)/.test(n))
-    return 'Back (Upper/Mid)';
-
-  // Lower Back / Posterior chain
-  if (/(deadlift(?! shrug)|good morning|hyperextension|rack pull|back extension|glute ham raise|bird dog|superman|floor bridge|suitcase deadlift)/.test(n))
-    return 'Lower Back';
-
-  // Biceps
-  if (/(bicep|curl|zottman|hammer curl|preacher curl|concentration curl|spider curl|drag curl)/.test(n))
-    return 'Biceps';
-
-  // Triceps
-  if (/(tricep|skull crusher|overhead tricep|kickback|pushdown|close-grip bench|close-grip push-up|tate press|bodyweight tricep)/.test(n))
-    return 'Triceps';
-
-  // Forearms / Grip
-  if (/(forearm|wrist|farmer.?s walk|plate pinch|towel pull-up|dead hang|rice bucket|fingertip|grip|wrist roller)/.test(n))
-    return 'Forearms/Grip';
-
-  // Core (Abs & Obliques)
-  if (/(abs|core|crunch|sit-up|plank|russian twist|leg raise|ab wheel|mountain climber|side bend|dead bug|windshield wiper|l-sit|dragon flag|oblique|hollow body|anti-rotation)/.test(n))
-    return 'Abs/Core';
-
-  // Quadriceps
-  if (/(squat(?! jump)|front squat|lunge|step-up|leg press|leg extension|wall sit|pistol squat|hack squat|sled push|reverse nordic)/.test(n))
-    return 'Quads';
-
-  // Hamstrings
-  if (/(hamstring|romanian deadlift|good morning|leg curl|glute ham raise|nordic hamstring|hip hinge)/.test(n))
-    return 'Hamstrings';
-
-  // Glutes
-  if (/(glute|hip thrust|kickback|frog pump|clamshell|fire hydrant|donkey kick|band walk)/.test(n))
-    return 'Glutes';
-
-  // Calves
-  if (/(calf|jump rope|farmer.?s walk on toes|seated calf|explosive calf|donkey calf)/.test(n))
-    return 'Calves';
-
-  // Cardio / Conditioning
-  if (/(cardio|run|jog|cycle|rowing|swim|burpee|jump rope|sprint|elliptical|stair climber|battle rope|medicine ball slam|agility ladder|cone drill|tire flip|shadowbox|hill sprint|tabata)/.test(n))
-    return 'Cardio/Conditioning';
-
-  // Gymnastics & Bodyweight
-  if (/(muscle-up|front lever|back lever|planche|human flag|wall walk|ring|rope climb|skin the cat|handstand|l-sit)/.test(n))
-    return 'Gymnastics/Bodyweight';
-
-  // Mobility / Yoga
-  if (/(yoga|stretch|pose|mobility|foam rolling|cat-cow|pigeon|downward dog|cobra|thoracic|wrist mobility|hamstring stretch|quad stretch|shoulder dislocate)/.test(n))
-    return 'Mobility/Flexibility';
-
-  // Functional / Complex lifts
-  if (/(crossfit|snatch|clean|jerk|thruster|turkish get-up|sled drag|sandbag|kettlebell clean|kettlebell snatch|wall ball)/.test(n))
-    return 'Functional/Complex';
+  for (const [category, list] of Object.entries(map)) {
+    const regex = new RegExp(
+      list
+        .map(str => escapeRegExp(str.toLowerCase()))
+        .join('|')
+    );
+    if (regex.test(n)) return category;
+  }
 
   return '';
 }
-
 
 // Inline sets logging for active workouts
 function addSetRowFor(id, reps='', weight=''){

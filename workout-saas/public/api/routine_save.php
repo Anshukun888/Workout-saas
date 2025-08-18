@@ -65,7 +65,11 @@ try {
     $sort = 0;
     foreach ($exs as $ex) {
       $title = trim($ex['title'] ?? ''); if ($title === '') continue;
-      $type = trim($ex['type'] ?? ''); if ($type === '') $type = null;
+      $type = trim($ex['type'] ?? '');
+      if ($type === '' || $type === null) {
+        $builtin = include __DIR__ . '/workout_builtin.php';
+        $type = $builtin[$title] ?? null;
+      }
       $default_sets = $ex['default_sets'] ?? null;
       $notes = trim($ex['notes'] ?? '');
       $sort++;
