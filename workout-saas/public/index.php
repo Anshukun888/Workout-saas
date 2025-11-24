@@ -5,24 +5,24 @@ if (isset($_SESSION['user_id'])) header("Location: dashboard.php");
 
 $error = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $email = trim($_POST['email'] ?? '');
-    $password = $_POST['password'] ?? '';
+  $login = trim($_POST['login'] ?? '');
+  $password = $_POST['password'] ?? '';
 
-    if ($email === '' || $password === '') $error = "Fill both fields.";
+  if ($login === '' || $password === '') $error = "Fill both fields.";
 
-    if ($error === '') {
-        $stmt = $pdo->prepare("SELECT id, name, password FROM users WHERE email = ?");
-        $stmt->execute([$email]);
-        $user = $stmt->fetch();
-        if ($user && password_verify($password, $user['password'])) {
-            $_SESSION['user_id'] = (int)$user['id'];
-            $_SESSION['name'] = $user['name'];
-            header("Location: dashboard.php");
-            exit();
-        } else {
-            $error = "Invalid credentials.";
-        }
+  if ($error === '') {
+    $stmt = $pdo->prepare("SELECT id, name, email, password FROM users WHERE email = ? OR name = ?");
+    $stmt->execute([$login, $login]);
+    $user = $stmt->fetch();
+    if ($user && password_verify($password, $user['password'])) {
+      $_SESSION['user_id'] = (int)$user['id'];
+      $_SESSION['name'] = $user['name'];
+      header("Location: dashboard.php");
+      exit();
+    } else {
+      $error = "Invalid credentials.";
     }
+  }
 }
 ?>
 <!doctype html>
@@ -45,8 +45,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           <?php endif; ?>
           <form method="post" novalidate>
             <div class="mb-2">
-              <label class="form-label">Email</label>
-              <input class="form-control" name="email" type="email" required>
+              <label class="form-label">Email or Username</label>
+              <input class="form-control" name="login" type="text" required>
             </div>
             <div class="mb-3">
               <label class="form-label">Password</label>
