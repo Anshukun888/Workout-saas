@@ -31,26 +31,273 @@ $historyCountStmt->execute([$user_id]);
 $historyCount = (int)$historyCountStmt->fetchColumn();
 ?>
 <!doctype html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>Dashboard - WorkoutTracker</title>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Dashboard</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <link href="assets/css/styles.css" rel="stylesheet">
+  <style>
+    body {
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      min-height: 100vh;
+    }
+    .navbar {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    .navbar-brand {
+      font-weight: 700;
+      font-size: 1.3rem;
+    }
+    .card {
+      border: none;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+    }
+    .nav-tabs {
+      border-bottom: 2px solid #e9ecef;
+    }
+    .nav-tabs .nav-link {
+      color: #6c757d;
+      border: none;
+      border-bottom: 3px solid transparent;
+      padding: 12px 20px;
+      font-weight: 500;
+      transition: all 0.3s;
+    }
+    .nav-tabs .nav-link:hover {
+      border-bottom-color: #667eea;
+      color: #667eea;
+    }
+    .nav-tabs .nav-link.active {
+      color: #667eea;
+      background: transparent;
+      border-bottom-color: #667eea;
+      font-weight: 600;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border: none;
+      transition: transform 0.2s;
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      background: linear-gradient(135deg, #5568d3 0%, #6a3f8f 100%);
+    }
+    .btn-success {
+      background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+      border: none;
+    }
+    .btn-success:hover {
+      background: linear-gradient(135deg, #0d7a72 0%, #2dd169 100%);
+    }
+    .list-group-item {
+      border: 1px solid #e9ecef;
+      margin-bottom: 10px;
+      border-radius: 8px !important;
+    }
+    .form-control, .form-select {
+      border-radius: 8px;
+      border: 1px solid #dee2e6;
+    }
+    .form-control:focus, .form-select:focus {
+      border-color: #667eea;
+      box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    }
+    .offcanvas-header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+    .offcanvas-title {
+      font-weight: 600;
+    }
+    .btn-close {
+      filter: invert(1);
+    }
+    .badge {
+      padding: 6px 12px;
+      border-radius: 20px;
+    }
+    .routine-day.selected {
+      outline: 3px solid #667eea;
+      background: #f0f4ff;
+    }
+    .sets-container {
+      background: #f8f9fa;
+      padding: 10px;
+      border-radius: 8px;
+    }
+
+    /* Mobile Responsive Styles */
+    @media (max-width: 767.98px) {
+      .navbar-brand {
+        font-size: 1.1rem;
+      }
+      .navbar .d-flex.align-items-center {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+      }
+      .navbar .d-flex.align-items-center span {
+        font-size: 0.9rem;
+        margin-right: 0 !important;
+      }
+      .nav-tabs {
+        flex-wrap: wrap;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+      .nav-tabs .nav-link {
+        padding: 10px 12px;
+        font-size: 0.9rem;
+        white-space: nowrap;
+      }
+      .nav-tabs .nav-link i {
+        margin-right: 4px;
+      }
+      .card {
+        margin-bottom: 1rem;
+      }
+      .routine-grid {
+        grid-template-columns: 1fr !important;
+      }
+      #muscleHeatmapWrapper {
+        flex-direction: column !important;
+        gap: 1rem !important;
+      }
+      #muscleMapFront,
+      #muscleMapBack {
+        width: 150px !important;
+      }
+      .col-lg-4,
+      .col-lg-6,
+      .col-lg-8 {
+        margin-bottom: 1rem;
+      }
+      .sets-container {
+        padding: 8px;
+      }
+      .list-group-item {
+        padding: 0.75rem;
+      }
+      .list-group-item .row.g-2 {
+        margin: 0;
+      }
+      .list-group-item .row.g-2 [class*='col-'] {
+        margin-bottom: 0.5rem;
+      }
+      .offcanvas {
+        width: 85% !important;
+      }
+      .btn-sm {
+        padding: 0.375rem 0.5rem;
+        font-size: 0.875rem;
+      }
+      h5, h6 {
+        font-size: 1.1rem;
+      }
+      .tab-content {
+        padding: 0;
+      }
+    }
+
+    @media (max-width: 575.98px) {
+      .navbar .container-fluid {
+        padding: 0.5rem 1rem;
+      }
+      .navbar .btn-outline-light {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.875rem;
+      }
+      .nav-tabs .nav-link {
+        padding: 8px 10px;
+        font-size: 0.85rem;
+      }
+      .hero-title {
+        font-size: 1.75rem;
+      }
+      .hero-subtitle {
+        font-size: 1rem;
+      }
+      .card p-3 {
+        padding: 1rem !important;
+      }
+      .form-control,
+      .form-select {
+        font-size: 0.9rem;
+      }
+      #muscleMapFront,
+      #muscleMapBack {
+        width: 120px !important;
+      }
+      #muscleHeatmapWrapper h6 {
+        font-size: 0.9rem;
+        margin-bottom: 0.5rem;
+      }
+      .badge {
+        font-size: 0.75rem;
+        padding: 4px 8px;
+      }
+      .d-flex.gap-2 {
+        flex-direction: column;
+      }
+      .d-flex.gap-2 .btn {
+        width: 100%;
+        margin-bottom: 0.5rem;
+      }
+      .mt-2.d-flex.gap-2 {
+        flex-direction: column;
+      }
+      .mt-2.d-flex.gap-2 .btn {
+        width: 100%;
+      }
+      #historyChart {
+        height: 250px !important;
+      }
+      .list-group-item .d-flex.flex-column {
+        gap: 0.5rem;
+      }
+      .list-group-item .small {
+        word-break: break-word;
+      }
+    }
+
+    /* Tablet specific adjustments */
+    @media (min-width: 768px) and (max-width: 991.98px) {
+      .routine-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+      }
+      #muscleMapFront,
+      #muscleMapBack {
+        width: 170px !important;
+      }
+    }
+  </style>
 </head>
-<body class="bg-light">
-<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark">
   <div class="container-fluid">
     <button class="btn btn-outline-light me-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasProfile">
-      <span class="navbar-toggler-icon"></span>
+      <i class="fas fa-user-circle"></i>
     </button>
-    <a class="navbar-brand d-flex align-items-center gap-2" href="#">
-      <img src="assets/img/logo.svg" alt="MuscleMap" height="36"/>
+    <a class="navbar-brand d-flex align-items-center gap-2" href="dashboard.php">
+      <img src="assets/img/logo.svg" alt="Logo" height="36"/>
     </a>
     <div class="collapse navbar-collapse"></div>
-    <div class="d-flex align-items-center ms-auto">
-      <span class="me-3 text-white">Hi, <?=htmlspecialchars($name)?></span>
-      <a href="logout.php" class="btn btn-outline-light btn-sm">Logout</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarContent">
+      <div class="d-flex align-items-center ms-auto flex-wrap gap-2">
+        <span class="text-white"><i class="fas fa-user me-2"></i>Hi, <?=htmlspecialchars($name)?></span>
+        <a href="logout.php" class="btn btn-outline-light btn-sm"><i class="fas fa-sign-out-alt me-1"></i>Logout</a>
+      </div>
     </div>
   </div>
 </nav>
@@ -91,16 +338,24 @@ $historyCount = (int)$historyCountStmt->fetchColumn();
     <div class="col-12 mb-3">
       <ul class="nav nav-tabs" id="dashboardTabs" role="tablist">
         <li class="nav-item" role="presentation">
-          <button class="nav-link active" id="routine-tab" data-bs-toggle="tab" data-bs-target="#routine" type="button" role="tab" aria-controls="routine" aria-selected="true">Routine</button>
+          <button class="nav-link active" id="routine-tab" data-bs-toggle="tab" data-bs-target="#routine" type="button" role="tab" aria-controls="routine" aria-selected="true">
+            <i class="fas fa-calendar-alt me-2"></i>Routine
+          </button>
         </li>
         <li class="nav-item" role="presentation">
-          <button class="nav-link" id="log-tab" data-bs-toggle="tab" data-bs-target="#log" type="button" role="tab" aria-controls="log" aria-selected="false">Log</button>
+          <button class="nav-link" id="log-tab" data-bs-toggle="tab" data-bs-target="#log" type="button" role="tab" aria-controls="log" aria-selected="false">
+            <i class="fas fa-edit me-2"></i>Log
+          </button>
         </li>
         <li class="nav-item" role="presentation">
-          <button class="nav-link" id="track-tab" data-bs-toggle="tab" data-bs-target="#track" type="button" role="tab" aria-controls="track" aria-selected="false">Track</button>
+          <button class="nav-link" id="track-tab" data-bs-toggle="tab" data-bs-target="#track" type="button" role="tab" aria-controls="track" aria-selected="false">
+            <i class="fas fa-fire me-2"></i>Track
+          </button>
         </li>
         <li class="nav-item" role="presentation">
-          <button class="nav-link" id="history-tab" data-bs-toggle="tab" data-bs-target="#history" type="button" role="tab" aria-controls="history" aria-selected="false">History</button>
+          <button class="nav-link" id="history-tab" data-bs-toggle="tab" data-bs-target="#history" type="button" role="tab" aria-controls="history" aria-selected="false">
+            <i class="fas fa-chart-line me-2"></i>History
+          </button>
         </li>
       </ul>
     </div>
@@ -112,7 +367,7 @@ $historyCount = (int)$historyCountStmt->fetchColumn();
           <div class="row g-3">
             <div class="col-lg-4">
               <div class="card p-3 shadow-sm">
-                <h5>Routine Settings</h5>
+                <h5><i class="fas fa-cog me-2 text-primary"></i>Routine Settings</h5>
                 <div class="mb-2">
                   <label class="form-label">Routine name</label>
                   <input id="routineName" class="form-control" placeholder="My Routine">
@@ -151,11 +406,11 @@ $historyCount = (int)$historyCountStmt->fetchColumn();
             </div>
             <div class="col-lg-8">
               <div class="card p-3 shadow-sm">
-                <h5>Routine Builder</h5>
+                <h5><i class="fas fa-dumbbell me-2 text-primary"></i>Routine Builder</h5>
                 <div class="text-muted small mb-2">Click a day to select it for logging.</div>
                 <div id="routineBuilder" class="routine-grid"></div>
                 <div class="d-flex justify-content-end mt-2">
-                  <button class="btn btn-outline-success" id="startDayBtn2">Start Selected Day</button>
+                  <button class="btn btn-outline-success w-100 w-md-auto" id="startDayBtn2">Start Selected Day</button>
                 </div>
               </div>
             </div>
@@ -165,7 +420,7 @@ $historyCount = (int)$historyCountStmt->fetchColumn();
         <!-- LOG TAB (sets/reps/weight) -->
         <div class="tab-pane fade" id="log" role="tabpanel" aria-labelledby="log-tab">
           <div class="card p-3 shadow-sm">
-            <h6>Log Active Workouts</h6>
+            <h6><i class="fas fa-edit me-2 text-primary"></i>Log Active Workouts</h6>
             <div id="logList">
               <?php if (empty($workouts)): ?>
                 <div class="text-muted">No active workouts to log.</div>
@@ -215,7 +470,7 @@ $historyCount = (int)$historyCountStmt->fetchColumn();
           <div class="row g-3">
             <div class="col-lg-6">
               <div class="card p-3 shadow-sm">
-                <h6>Active Workouts</h6>
+                <h6><i class="fas fa-list me-2 text-primary"></i>Active Workouts</h6>
                 <div id="workoutList">
                   <?php if (empty($workouts)): ?>
                     <div class="text-muted">No active workouts.</div>
@@ -243,9 +498,9 @@ $historyCount = (int)$historyCountStmt->fetchColumn();
             </div>
             <div class="col-lg-6">
               <div class="card p-3 shadow-sm">
-                <h6>Muscle heatmap</h6>
+                <h6><i class="fas fa-fire me-2 text-primary"></i>Muscle Heatmap</h6>
                 <p class="text-muted small">Darker red = worked more often</p>
-                <div id="muscleHeatmapWrapper" class="d-flex justify-content-center gap-4" style="max-width: 400px; margin: 0 auto;">
+                <div id="muscleHeatmapWrapper" class="d-flex justify-content-center align-items-start gap-4 flex-wrap" style="max-width: 100%; margin: 0 auto;">
   <!-- Front View SVG -->
   <div class="text-center">
     <h6>Front</h6>
@@ -334,7 +589,7 @@ $historyCount = (int)$historyCountStmt->fetchColumn();
           <div class="row g-3">
             <div class="col-lg-4">
               <div class="card p-3 shadow-sm mb-3">
-                <h6>Summary</h6>
+                <h6><i class="fas fa-chart-bar me-2 text-primary"></i>Summary</h6>
                 <div>Completed total: <strong id="historyTotal"><?= $historyCount ?></strong></div>
                 <div class="mt-2">
                   <label class="form-label">Time range for chart</label>
@@ -348,54 +603,16 @@ $historyCount = (int)$historyCountStmt->fetchColumn();
               </div>
 
               <div class="card p-3 shadow-sm">
-                <h6>Counts by type (selected range)</h6>
+                <h6><i class="fas fa-list-ol me-2 text-primary"></i>Counts by Type</h6>
                 <div id="typeCounts" class="d-flex flex-column gap-2"></div>
               </div>
             </div>
 
-         <div class="card p-3 shadow-sm" style="max-width: 600px; margin: 0 auto;">
-  <h6>Visual</h6>
-  <canvas id="historyChart" height="180" style="width: 100%; height: 380px;"></canvas>
-</div>
-
-
-              <div class="card p-3 mt-3 shadow-sm">
-                <h6>Recent History</h6>
-                <?php if (empty($history)): ?>
-                  <div class="text-muted">No history yet.</div>
-                <?php else: ?>
-                  <div class="list-group">
-                    <?php foreach ($history as $h): ?>
-                      <div class="list-group-item">
-                        <div class="d-flex justify-content-between">
-                          <div>
-                            <strong><?=htmlspecialchars($h['title'])?></strong>
-                            <div class="small text-muted"><?=htmlspecialchars($h['type'])?> — <?=htmlspecialchars($h['notes'])?></div>
-                            <?php
-                              $sets_display = '';
-                              if (!empty($h['sets'])) {
-                                $sets = json_decode($h['sets'], true);
-                                if (is_array($sets)) {
-                                  $parts = [];
-                                  foreach ($sets as $i=>$s) {
-                                    $parts[] = 'S'.($i+1).':'.intval($s['reps']).'r×'.htmlspecialchars($s['weight']);
-                                  }
-                                  $sets_display = implode(' | ', $parts);
-                                }
-                              }
-                            ?>
-                            <?php if ($sets_display): ?>
-                              <div class="small text-muted mt-1">Sets: <?=$sets_display?></div>
-                            <?php endif; ?>
-                          </div>
-                          <div class="text-end small text-muted"><?=htmlspecialchars($h['completed_at'])?></div>
-                        </div>
-                      </div>
-                    <?php endforeach; ?>
-                  </div>
-                <?php endif; ?>
+            <div class="col-lg-8">
+              <div class="card p-3 shadow-sm">
+                <h6>Visual</h6>
+                <canvas id="historyChart" height="180" style="width: 100%; height: 380px;"></canvas>
               </div>
-
             </div>
           </div>
         </div>

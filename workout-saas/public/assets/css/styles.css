@@ -44,3 +44,75 @@ body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neu
   padding: 8px;
 }
 
+/* ============================================
+   RESPONSIVE MEDIA QUERIES
+   ============================================ */
+
+/* Mobile devices (up to 576px) */
+@media (max-width: 575.98px) {
+  /* Routine grid - single column on mobile */
+  .routine-grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  /* Suggestions dropdown - full width on mobile */
+  #suggestions {
+    max-height: 120px;
+  }
+
+  /* Cards - less padding on mobile */
+  .card {
+    padding: 0.75rem !important;
+  }
+
+  /* Muscle map - smaller on mobile */
+  #muscleMapFront,
+  #muscleMapBack {
+    width: 140px !important;
+  }
+
+  /* Buttons - stack on mobile */
+  .d-flex.gap-2 {
+    flex-direction: column;
+  }
+
+  .d-flex.gap-2 .btn {
+    width: 100%;
+  }
+}
+
+/* Tablet devices (576px to 768px) */
+@media (min-width: 576px) and (max-width: 767.98px) {
+  .routine-grid {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 10px;
+  }
+
+  #muscleMapFront,
+  #muscleMapBack {
+    width: 160px !important;
+  }
+}
+
+/* Small desktop devices (768px to 992px) */
+@media (min-width: 768px) and (max-width: 991.98px) {
+  .routine-grid {
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  }
+}
+
+/* Extra small devices (landscape phones, less than 576px) */
+@media (max-width: 575.98px) {
+  /* Ensure proper spacing */
+  .container {
+    padding-left: 15px;
+    padding-right: 15px;
+  }
+
+  /* Stack columns vertically */
+  .row > [class*='col-'] {
+    margin-bottom: 1rem;
+  }
+}
+
