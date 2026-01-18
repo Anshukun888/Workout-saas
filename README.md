@@ -1,4 +1,4 @@
-## Workout Tracker Micro SaaS 🏋️‍♂️
+## Simple Workout Tracker 🏋️‍♂️
 
 A college project web application that helps users track and analyze their workouts. Users can create accounts, log in, set routines, and monitor progress over time. The app provides insights into which muscle groups are being trained the most, helping users optimize their fitness goals.
 
